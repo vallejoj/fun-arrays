@@ -57,8 +57,7 @@ var datasetWithRoundedDollar = dataset.bankBalances.map( (account) =>{
   assign the resulting new array to `roundedDime`
 */
 var datasetWithRoundedDime = dataset.bankBalances.map( (account)=>{
- return { 'amount': dataset.bankBalances.amount,
- 
+ return { 'amount': account.amount,
    'roundedDime': Math.round(account.amount*10)/10}
 });
 console.log(datasetWithRoundedDime)

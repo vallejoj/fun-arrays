@@ -6,9 +6,18 @@ var dataset = require('./dataset.json');
   greater than 100000
   assign the resulting new array to `hundredThousandairs`
 */
-var hundredThousandairs = dataset.bankBalances.filter(function(account){
+// var hundredThousandairs = dataset.bankBalances.filter( greaterThanThousand );
+// function greaterThanThousand( number ){
+//   var array = parseFloat(number.amount);
+//   return array > 100000;
+// }
+
+var hundredThousandairs = dataset.bankBalances.filter(greaterThanThousand);
+
+
+function greaterThanThousand(account){
   return account.amount>100000
-});
+};
 
 /*
   DO NOT MUTATE DATA.
@@ -56,16 +65,31 @@ var datasetWithRoundedDollar = dataset.bankBalances.map( (account) =>{
     }
   assign the resulting new array to `roundedDime`
 */
+
 var datasetWithRoundedDime = dataset.bankBalances.map( (account)=>{
  return { 'amount': account.amount,
    'roundedDime': Math.round(account.amount*10)/10}
 });
-console.log(datasetWithRoundedDime)
+
+
 
 
 
 // set sumOfBankBalances to be the sum of all value held at `amount` for each bank object
-var sumOfBankBalances = null;
+
+
+// WHYYYYYYYYYYYYYYYYYYYYYYYYYYYY!!!!!!!!!!1
+// function combineBankBalances(initialValue,account){
+//     return initialValue+ Math.round(account.amount*100)/100
+// }
+//
+// var sumOfBankBalances = dataset.bankBalances.reduce(combineBankBalances, 0);
+var sumOfBankBalances = dataset.bankBalances.reduce( (bankTotals, currentNum) => {
+  return Math.round((bankTotals += parseFloat(currentNum.amount)) * 100) / 100;
+},0);
+
+
+
 
 /*
   from each of the following states:
@@ -78,7 +102,22 @@ var sumOfBankBalances = null;
   take each `amount` and add 18.9% interest to it rounded to the nearest cent
   and then sum it all up into one value saved to `sumOfInterests`
  */
-var sumOfInterests = null;
+
+var sumOfInterests= dataset.bankBalances.filter(filterStates).reduce(addInterest, 0);
+
+function filterStates(place){
+  return place.state==="WI" || place.state ==="IL" || place.state=== "WY" || place.state ==="OH" || place.state ==="GA" || place.state === "DE"
+
+}
+
+
+
+function addInterest(initialValue, account){
+var total= initialValue+ parseFloat(account.amount)*.189;
+
+  return Math.round(total*100)/100
+}
+
 
 /*
   aggregate the sum of bankBalance amounts
@@ -96,7 +135,15 @@ var sumOfInterests = null;
     round this number to the nearest 10th of a cent before moving on.
   )
  */
-var stateSums = null;
+var stateSums = dataset.bankBalances.reduce((ourState, account)=>{
+  if(!ourState.hasOwnProperty(account.state)){
+    ourState[account.state]=0
+  }
+
+  ourState[account.state]+= Math.round(account.amount*100)/100
+  ourState[account.state] = parseFloat(ourState[account.state].toFixed(2))
+  return ourState
+},{});
 
 /*
   from each of the following states:

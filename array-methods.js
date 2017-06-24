@@ -1,17 +1,5 @@
 var dataset = require('./dataset.json');
 
-
-/*
-  create an array with accounts from bankBalances that are
-  greater than 100000
-  assign the resulting new array to `hundredThousandairs`
-*/
-// var hundredThousandairs = dataset.bankBalances.filter( greaterThanThousand );
-// function greaterThanThousand( number ){
-//   var array = parseFloat(number.amount);
-//   return array > 100000;
-// }
-
 var hundredThousandairs = dataset.bankBalances.filter(greaterThanThousand);
 
 
@@ -19,52 +7,13 @@ function greaterThanThousand(account){
   return account.amount>100000
 };
 
-/*
-  DO NOT MUTATE DATA.
 
-  create a new dataset where each bank object is a new object.
-  `amount` and `state` values will be transferred to the new object.
-  This new object is different, you will add one new key of `rounded`
-
-  `rounded` value is `amount` rounded to the nearest dollar
-
-  Example:
-    {
-      "amount": "134758.44",
-      "state": "HI",
-      "rounded": 134758
-    }
-  assign the resulting new array to `datasetWithRoundedDollar`
-*/
 var datasetWithRoundedDollar = dataset.bankBalances.map( (account) =>{
     return {'rounded' : Math.round(account.amount)}
 
 
 });
 
-/*
-  DO NOT MUTATE DATA.
-
-  create a new dataset where each bank object is a new object.
-  `amount` and `state` values will be transferred to the new object.
-  This new object is different, you will add one new key of `roundedDime`
-
-  `roundedDime` value is `amount` rounded to the nearest 10th of a cent
-
-  Example 1
-    {
-      "amount": "134758.46",
-      "state": "HI"
-      "roundedDime": 134758.5
-    }
-  Example 2
-    {
-      "amount": "134758.44",
-      "state": "HI"
-      "roundedDime": 134758.4
-    }
-  assign the resulting new array to `roundedDime`
-*/
 
 var datasetWithRoundedDime = dataset.bankBalances.map( (account)=>{
  return { 'amount': account.amount,
@@ -84,12 +33,14 @@ var datasetWithRoundedDime = dataset.bankBalances.map( (account)=>{
 // }
 //
 // var sumOfBankBalances = dataset.bankBalances.reduce(combineBankBalances, 0);
-var sumOfBankBalances = dataset.bankBalances.reduce( (bankTotals, currentNum) => {
+var sumOfBankBalances = dataset.bankBalances.reduce(bankSum,0)
+
+function bankSum(bankTotals,currentNum){
   return Math.round((bankTotals += parseFloat(currentNum.amount)) * 100) / 100;
-},0);
+};
 
 
-
+console.log(sumOfBankBalances)
 
 /*
   from each of the following states:
@@ -103,20 +54,6 @@ var sumOfBankBalances = dataset.bankBalances.reduce( (bankTotals, currentNum) =>
   and then sum it all up into one value saved to `sumOfInterests`
  */
 
-var sumOfInterests= dataset.bankBalances.filter(filterStates).reduce(addInterest, 0);
-
-function filterStates(place){
-  return place.state==="WI" || place.state ==="IL" || place.state=== "WY" || place.state ==="OH" || place.state ==="GA" || place.state === "DE"
-
-}
-
-
-
-function addInterest(initialValue, account){
-var total= initialValue+ parseFloat(account.amount)*.189;
-
-  return Math.round(total*100)/100
-}
 
 
 /*
@@ -135,7 +72,9 @@ var total= initialValue+ parseFloat(account.amount)*.189;
     round this number to the nearest 10th of a cent before moving on.
   )
  */
-var stateSums = dataset.bankBalances.reduce((ourState, account)=>{
+var stateSums = dataset.bankBalances.reduce(sumUp,{})
+
+ function sumUp(ourState, account){
   if(!ourState.hasOwnProperty(account.state)){
     ourState[account.state]=0
   }
@@ -143,8 +82,40 @@ var stateSums = dataset.bankBalances.reduce((ourState, account)=>{
   ourState[account.state]+= Math.round(account.amount*100)/100
   ourState[account.state] = parseFloat(ourState[account.state].toFixed(2))
   return ourState
-},{});
+};
 
+
+
+
+ var sumOfInterests= dataset.bankBalances.filter(filterStates).reduce(addInterest, 0);
+
+ function filterStates(place){
+  return ['WI','IL','WY','OH','GA','DE'].indexOf(place.state)!==-1
+
+ }
+
+
+
+ function addInterest(initialValue, account){
+ var total= initialValue+ parseFloat(account.amount)*.189;
+   return Math.round(total*100)/100
+ }
+
+  function addHighInterest(account){
+
+  return account.amount*.189
+  }
+
+function filterRestOfStates(account){
+    return ['WI','IL','WY','OH','GA','DE'].indexOf(account.state)===-1
+}
+function filterLowInterest(account){
+  return account.amount>50,000
+}
+
+var sumOfHighInterests = dataset.bankBalances.map(addHighInterest).filter(filterRestOfStates)
+// .reduce(bankSum,0);
+console.log(sumOfHighInterests)
 /*
   from each of the following states:
     Wisconsin
@@ -161,21 +132,36 @@ var stateSums = dataset.bankBalances.reduce((ourState, account)=>{
     round this number to the nearest 10th of a cent before moving on.
   )
  */
-var sumOfHighInterests = null;
+
 
 /*
   set `lowerSumStates` to be an array of two letter state
   abbreviations of each state where the sum of amounts
   in the state is less than 1,000,000
  */
-var lowerSumStates = null;
+ var lowerSumStates = Object.keys(stateSums).filter( lowStates )
+
+ function lowStates( number ) {
+   return stateSums[number] < 1000000
+ }
 
 /*
   aggregate the sum of each state into one hash table
   `higherStateSums` should be the sum of all states with totals greater than 1,000,000
  */
-var higherStateSums = null;
+var higherStateSums= Object.keys(stateSums).filter(highStates).reduce(addHighStateSums,0)
 
+function highStates( number ) {
+
+
+  return stateSums[number] > 1000000
+
+}
+
+function addHighStateSums(indexPoint, number){
+return indexPoint+stateSums[number]
+
+}
 /*
   from each of the following states:
     Wisconsin
